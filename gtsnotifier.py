@@ -7,6 +7,7 @@ import sqlite3
 import os
 import smtplib
 from email.mime.text import MIMEText
+import irccat
 
 # Construct the config filename from the working directory of the script
 configPath = os.path.dirname(os.path.realpath(__file__))
@@ -86,6 +87,15 @@ for user in users:
                 s.login(GTS_EMAIL, GTS_EMAIL_PASS)
                 s.sendmail(GTS_EMAIL, dest, mail.as_string())
                 s.quit()
+            elif destType = u'irc':
+                irccat.send_message({
+                    "target": ircname,
+                    "message": u"Your IRC nick has been added!",
+                    "server": "irc.synirc.net",
+                    "port": 6667,
+                    "nickname": "gtsnotifier"
+                })
+                        
 
             # Write the time of the last trade to the database
             db.execute(

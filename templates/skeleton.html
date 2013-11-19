@@ -21,9 +21,14 @@
         <a href="/pushover">pushover</a>,
         {% endif %}
         {% if currPage == 'email' %}
-        email
+        email,
         {% else %}
-        <a href="/email">email</a>
+        <a href="/email">email</a>,
+        {% endif %}
+        {% if currPage == 'irc' %}
+        irc
+        {% else %}
+        <a href="/irc">irc</a>
         {% endif %}
         or
         {% if currPage == 'twitter' %}

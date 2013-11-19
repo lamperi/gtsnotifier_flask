@@ -8,6 +8,7 @@ import ConfigParser
 import os
 import smtplib
 from email.mime.text import MIMEText
+import irccat
 
 # Construct the config filename from the working directory of the script
 configPath = os.path.dirname(os.path.realpath(__file__))
@@ -73,6 +74,11 @@ def pushover_page():
 @app.route('/email')
 def email_page():
     return flask.render_template('email.html', currPage='email')
+
+
+@app.route('/irc')
+def irc_page():
+    return flask.render_template('irc.html', currPage='irc')
 
 
 @app.route('/twitter')
@@ -266,6 +272,64 @@ def add_email():
     # Return to the input form
     return flask.redirect(flask.url_for('email_page'))
 
+# view function for /add, the POST destination for the input form
+@app.route('/add_irc', methods=['POST'])
+def add_irc():
+
+    # Store the form input in accessible variables
+    profId = flask.request.form['inputProfileId']
+    ircname = flask.request.form['inputIRC']
+
+    # If either of the form inputs are blank...
+    if '' in (profId, ircname):
+        # Create a message to be sent along with the return request
+        flask.flash('Please enter a valid profile ID', 'alert-danger')
+    elif checkProfInDB(profId):
+        flask.flash(
+            'Your ID has already been added to the database',
+            'alert-danger'
+        )
+    elif checkProfInvalid(profId):
+        flask.flash(
+            'Your profile ID is invalid or your gts trades are not visible',
+            'alert-danger'
+        )
+    else:
+        profile = requests.get(
+            'http://3ds.pokemon-gl.com/user/%s/gts/' % profId
+        )
+        # Parse the user profile for account/savedata ids, for the gts request
+        for line in profile.content.split('\n'):
+            if 'USERS_ACCOUNT_ID' in line:
+                profAccountId = line.split('\'')[1]
+            elif 'USERS_SAVEDATA_ID' in line:
+                profSavedataId = line.split('\'')[1]
+        # Insert the form values and the requested values into users database
+        flask.g.db.execute('insert into users values(?, ?, ?, ?, ?, ?)', [
+            profId,
+            profAccountId,
+            profSavedataId,
+            ircname,
+            'irc',
+            0
+        ])
+        flask.g.db.commit()
+        flask.flash(
+            'Your profile was successfully added to the database',
+            'alert-success'
+        )
+
+    	# Enter here logic to send IRC message
+        irccat.send_message({
+            "target": ircname,
+	    "message": u"Your IRC nick has been added!",
+            "server": "irc.synirc.net",
+            "port": 6667,
+            "nickname": "gtsnotifier"
+        })
+
+    # Return to the input form
+    return flask.redirect(flask.url_for('irc_page'))
 
 @app.route('/remove_user', methods=['POST'])
 def remove_user():
