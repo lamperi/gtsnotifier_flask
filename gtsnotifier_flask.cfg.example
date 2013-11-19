@@ -1,0 +1,16 @@
+# Example config for gtsnotifier_flask
+[config]
+# The file where SQLite database is stored
+DATABASE: database.sql
+# Flask secret key
+SECRET_KEY: random bits to store flask sessions
+# Make Flask print debug lines
+DEBUG: True
+# Configuration for email account
+# Currently uses smtp.gmail.com
+GTS_EMAIL: youraccount@example.com
+GTS_EMAIL_PASS: flaskiscool
+# PushApp configuration 	
+PUSHAPPID: enter your push app id here
+# IRC configuration
+IRCSERVER: irc.synirc.net:6667
